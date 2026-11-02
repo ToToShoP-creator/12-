@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCRP Lab: TikTok Arena Battle</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0d1117;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            user-select: none;
+        }
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(135deg, #1a1f29 0%, #0d1117 100%);
+        }
+        /* Інтерфейс стріму */
+        .hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            pointer-events: none;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .team-box {
+            padding: 10px 25px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .team-left { border-color: #ff3366; color: #ff3366; }
+        .team-right { border-color: #33ccff; color: #33ccff; }
+
+        /* Панель тестування для розробника (знизу) */
+        .test-panel {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 30, 0.9);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid #444;
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            pointer-events: auto;
+            z-index: 100;
+        }
+        .test-btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .test-btn:hover { background: #2ea043; transform: scale(1.05); }
+        .test-btn.team2 { background: #1f6feb; }
+        .test-btn.team2:hover { background: #388bfd; }
+    </style>
+</head>
+<body>
+
+    <div class="hud">
+        <div class="team-box team-left">🔴 Червоні: <span id="scoreLeft">0</span></div>
+        <div style="font-size: 18px; color: #aaa;">@scrp_lab LIVE ARENA</div>
+        <div class="team-box team-right">🔵 Сині: <span id="scoreRight">0</span></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Кнопки для перевірки гри (тести без реального донату) -->
+    <div class="test-panel">
+        <span style="align-self: center; font-size: 14px; color: #888;">Тест (Команда 1):</span>
+        <button class="test-btn" onclick="simulateGift('Троянда', 1, 'Гість_1')">🌹 Троянда</button>
+        <button class="test-btn" onclick="simulateGift('Лев', 100, 'Бос_Чату')">🦁 Лев (Епік)</button>
+        <span style="align-self: center; font-size: 14px; color: #888; margin-left: 10px;">Команда 2:</span>
+        <button class="test-btn team2" onclick="simulateGift('Троянда', 2, 'Ткач_Дубно')">🌹 Троянда</button>
+        <button class="test-btn team2" onclick="simulateGift('Петарда', 50, 'СтрімМайстер')">🎇 Петарда</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let fighters = [];
+        let scoreL = 0;
+        let scoreR = 0;
+
+        // Клас бійця (нікнейм глядача, що прийшов з подарунком)
+        class Fighter {
+            constructor(name, team, power, giftName) {
+                this.name = name;
+                this.team = team; // 1 - ліворуч, 2 - праворуч
+                this.power = power; // Впливає на розмір та силу
+                this.giftName = giftName;
+                
+                this.x = team === 1 ? 100 : canvas.width - 100;
+                this.y = canvas.height / 2 + (Math.random() * 200 - 100);
+                this.targetX = canvas.width / 2 + (team === 1 ? -50 : 50);
+                this.speed = 2 + Math.random() * 2;
+                this.size = Math.min(30 + power * 2, 70);
+                this.hp = 100 + power * 10;
+                this.maxHp = this.hp;
+                this.state = 'walk'; // walk, fight, victory, dead
+                this.emoji = power > 50 ? '🦁🔥' : (power > 10 ? '😎⚡' : '🌹✨');
+            }
+
+            update() {
+                if (this.state === 'walk') {
+                    if (this.team === 1 && this.x < this.targetX) this.x += this.speed;
+                    if (this.team === 2 && this.x > this.targetX) this.x -= this.speed;
+                    
+                    // Зустріч у центрі — починається бійка!
+                    if (Math.abs(this.x - this.targetX) < 10) {
+                        this.state = 'fight';
+                    }
+                } else if (this.state === 'fight') {
+                    // Кумедне тремтіння під час епічної битви
+                    this.y += (Math.random() - 0.5) * 6;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                // Малюємо кумедну ауру або тінь
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.team === 1 ? 'rgba(255, 51, 102, 0.3)' : 'rgba(51, 204, 255, 0.3)';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = this.team === 1 ? '#ff3366' : '#33ccff';
+                ctx.stroke();
+
+                // Іконка та нікнейм
+                ctx.font = `${Math.max(16, this.size / 2)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.emoji, this.x, this.y - this.size / 2 - 10);
+
+                ctx.font = 'bold 14px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(this.name, this.x, this.y + this.size / 2 + 20);
+
+                // Напис про подарунок
+                ctx.font = '11px Arial';
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText(`🎁 ${this.giftName}`, this.x, this.y + this.size / 2 + 38);
+
+                ctx.restore();
+            }
+        }
+
+        // Функція симуляції подарунка (для кнопок перевірки або реального WebSocket)
+        function simulateGift(giftName, team, username) {
+            let power = 1;
+            if (giftName === 'Троянда') power = 1;
+            if (giftName === 'Петарда') power = 15;
+            if (giftName === 'Лев') power = 100;
+
+            fighters.push(new Fighter(username, team, power, giftName));
+
+            if (team === 1) {
+                scoreL += power;
+                document.getElementById('scoreLeft').innerText = scoreL;
+            } else {
+                scoreR += power;
+                document.getElementById('scoreRight').innerText = scoreR;
+            }
+        }
+
+        // Головний ігровий цикл
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Намалювати розділову лінію арени
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Оновлення та малювання всіх бійців
+            fighters.forEach(f => {
+                f.update();
+                f.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // ПРИКЛАД: Як підключити реальний стрім через Node.js WebSocket (tiktok-live-connector)
+        /*
+        const ws = new WebSocket('ws://localhost:8080');
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'gift') {
+                // Автоматичний розподіл команди (наприклад, за чотними/нечотними айді або рандомом)
+                let team = Math.random() > 0.5 ? 1 : 2;
+                simulateGift(data.giftName, team, data.uniqueId);
+            }
+        };
+        */
+    </script>
+</body>
+</html>
