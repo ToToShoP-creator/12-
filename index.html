@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCRP Lab: TikTok Ultimate Arena</title>
+    <title>SCRP Lab vs Zone: TikTok Ultimate War Arena</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,7 +15,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #05070c;
+            background: #030712;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
         }
@@ -24,72 +24,74 @@
             width: 100vw;
             height: 100vh;
         }
-        /* HUD / Верхня панель рахунку */
-        .hud-container {
+        /* Інтерфейс стріму (HUD) */
+        .hud-wrapper {
             position: absolute;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 25px;
-            background: rgba(10, 14, 23, 0.85);
-            padding: 12px 35px;
-            border-radius: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7), inset 0 0 15px rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            z-index: 20;
+            gap: 30px;
+            background: rgba(10, 14, 23, 0.9);
+            padding: 14px 40px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            z-index: 30;
         }
-        .faction-card {
+        .team-hud {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .faction-title {
-            font-size: 12px;
+        .team-name {
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-weight: 700;
-            opacity: 0.8;
-            margin-bottom: 2px;
+            font-weight: 800;
+            opacity: 0.85;
+            margin-bottom: 3px;
         }
-        .faction-score {
-            font-size: 28px;
+        .team-score {
+            font-size: 32px;
             font-weight: 900;
             letter-spacing: 1px;
         }
-        .lab-side .faction-score, .lab-side .faction-title { color: #ff3366; text-shadow: 0 0 12px rgba(255, 51, 102, 0.6); }
-        .zone-side .faction-score, .zone-side .faction-title { color: #00ff66; text-shadow: 0 0 12px rgba(0, 255, 102, 0.6); }
-        
-        .vs-badge {
+        .lab-hud .team-score, .lab-hud .team-name { color: #ff3366; text-shadow: 0 0 15px rgba(255, 51, 102, 0.7); }
+        .zone-hud .team-score, .zone-hud .team-name { color: #00ff66; text-shadow: 0 0 15px rgba(0, 255, 102, 0.7); }
+
+        .vs-center {
             background: linear-gradient(135deg, #7928ca, #ff0080);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             font-weight: 900;
-            font-size: 16px;
-            box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
+            font-size: 18px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.6);
+            letter-spacing: 2px;
         }
 
-        /* Нижня панель тестування та керування */
-        .test-panel {
+        /* Нижня панель тестування */
+        .test-control-panel {
             position: absolute;
             bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 12px;
-            background: rgba(10, 14, 23, 0.92);
-            padding: 15px 25px;
+            background: rgba(10, 14, 23, 0.95);
+            padding: 16px 30px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            backdrop-filter: blur(15px);
+            z-index: 30;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 95vw;
         }
-        .btn {
+        .control-btn {
             background: #1f293d;
             color: white;
             border: none;
@@ -99,37 +101,37 @@
             font-weight: 700;
             font-size: 13px;
             transition: all 0.25s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .btn:hover {
+        .control-btn:hover {
             transform: translateY(-3px);
-            filter: brightness(1.25);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+            filter: brightness(1.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
         }
-        .btn-lab { background: linear-gradient(135deg, #ff3366, #ff6b81); }
-        .btn-zone { background: linear-gradient(135deg, #00b09b, #96c93d); color: #05070c; }
-        .btn-epic { background: linear-gradient(135deg, #f7b733, #fc4a1a); }
+        .btn-lab-item { background: linear-gradient(135deg, #ff3366, #ff6b81); }
+        .btn-zone-item { background: linear-gradient(135deg, #00b09b, #96c93d); color: #030712; }
+        .btn-epic-item { background: linear-gradient(135deg, #f7b733, #fc4a1a); }
 
-        /* Статус WebSocket */
-        #ws-status {
+        /* Статус підключення */
+        #network-status {
             position: absolute;
             top: 25px;
             right: 25px;
-            padding: 8px 18px;
+            padding: 9px 20px;
             border-radius: 30px;
             font-size: 13px;
             font-weight: 800;
             background: rgba(255, 51, 102, 0.15);
             color: #ff3366;
             border: 1px solid rgba(255, 51, 102, 0.4);
-            backdrop-filter: blur(8px);
-            z-index: 20;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            z-index: 30;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
         }
-        #ws-status.connected {
+        #network-status.connected {
             background: rgba(0, 255, 102, 0.15);
             color: #00ff66;
             border-color: rgba(0, 255, 102, 0.4);
@@ -138,109 +140,112 @@
 </head>
 <body>
 
-    <div id="ws-status">🔴 WS: Очікування підключення...</div>
+    <div id="network-status">🔴 WS: Тест-режим (Очікування мосту)</div>
 
-    <div class="hud-container">
-        <div class="faction-card lab-side">
-            <span class="faction-title">СКРП Лаб</span>
-            <span class="faction-score" id="scoreLab">0</span>
+    <div class="hud-wrapper">
+        <div class="team-hud lab-hud">
+            <span class="team-name">СКРП Лаб (Команда 1)</span>
+            <span class="team-score" id="scoreLab">0</span>
         </div>
-        <div class="vs-badge">VS</div>
-        <div class="faction-card zone-side">
-            <span class="faction-title">Зона</span>
-            <span class="faction-score" id="scoreZone">0</span>
+        <div class="vs-center">VS</div>
+        <div class="team-hud zone-hud">
+            <span class="team-name">Зона (Команда 2)</span>
+            <span class="team-score" id="scoreZone">0</span>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <div class="test-panel">
-        <button class="btn btn-lab" onclick="simulateGift('СКРП Лаб', 'Троянда', 1)">🌹 Лаб: Троянда</button>
-        <button class="btn btn-lab" onclick="simulateGift('СКРП Лаб', 'Лев (Епік)', 10)">🦁 Лаб: Лев</button>
-        <button class="btn btn-zone" onclick="simulateGift('Зона', 'Петарда', 2)">🎇 Зона: Петарда</button>
-        <button class="btn btn-zone" onclick="simulateGift('Зона', 'Троянда', 1)">🌹 Зона: Троянда</button>
-        <button class="btn btn-epic" onclick="triggerMegaEvent()">⚡ МЕГА ХАОС</button>
+    <div class="test-control-panel">
+        <button class="control-btn btn-lab-item" onclick="simulateGift('СКРП Лаб', 'Троянда', 1)">🌹 Лаб: Троянда</button>
+        <button class="control-btn btn-lab-item" onclick="simulateGift('СКРП Лаб', 'Петарда', 15)">🎇 Лаб: Петарда</button>
+        <button class="control-btn btn-lab-item" onclick="simulateGift('СКРП Лаб', 'Лев', 100)">🦁 Лаб: Лев</button>
+        <button class="control-btn btn-zone-item" onclick="simulateGift('Зона', 'Ромашка', 1)">🌼 Зона: Ромашка</button>
+        <button class="control-btn btn-zone-item" onclick="simulateGift('Зона', 'Торт', 20)">🎂 Зона: Торт</button>
+        <button class="control-btn btn-zone-item" onclick="simulateGift('Зона', 'Галактика', 150)">🌌 Зона: Галактика</button>
+        <button class="control-btn btn-epic-item" onclick="triggerGlobalChaos()">⚡ МЕГА БИТВА</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        function resize() {
+        function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
-        resize();
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        // Ігрові стани
+        // Глобальні змінні гри
         let scoreLab = 0;
         let scoreZone = 0;
         let fighters = [];
         let particles = [];
         let floatingTexts = [];
-        let backgroundEffects = [];
-        let screenShake = 0;
+        let backgroundStars = [];
+        let screenShakeIntensity = 0;
 
-        const avatars = ['🐱', '🤖', '🦊', '🐼', '💀', '👽', '🦖', '🤠', '🥷', '🦄', '🐯', '⚡'];
-        const testNames = ['Максим_Ткач', 'Олена_Зірка', 'Богдан_Кібер', 'Ірина_Світ', 'Тарас_Бджола', 'Віталік_Про', 'Катя_Мур', 'Діана_Арт', 'Скіф_99', 'Аркада_Дубно'];
+        const avatarsList = ['🐱', '🤖', '🦊', '🐼', '💀', '👽', '🦖', '🤠', '🥷', '🦄', '🐯', '⚡', '🧙‍♂️', '🦹‍♂️'];
+        const sampleUsernames = ['Максим_Ткач', 'Олена_Зірка', 'Богдан_Кібер', 'Ірина_Світ', 'Тарас_Бджола', 'Віталік_Про', 'Катя_Мур', 'Діана_Арт', 'Скіф_99', 'Аркада_Дубно', 'Кирило_Львів', 'Софія_Київ'];
 
-        // Створення фонових часток (частинки попелу та неонові зірки)
-        for (let i = 0; i < 60; i++) {
-            backgroundEffects.push({
+        // Створення фонових зірок та часток пилу
+        for (let i = 0; i < 80; i++) {
+            backgroundStars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.random() * 3 + 1,
-                speedY: (Math.random() - 0.5) * 0.5,
-                speedX: (Math.random() - 0.5) * 0.5,
-                alpha: Math.random() * 0.7 + 0.2
+                size: Math.random() * 2.5 + 0.8,
+                speedX: (Math.random() - 0.5) * 0.4,
+                speedY: (Math.random() - 0.5) * 0.4,
+                alpha: Math.random() * 0.8 + 0.2
             });
         }
 
-        // Клас Бійця (Глядача)
+        // Клас Бійця (Глядача, що бере участь у битві)
         class Fighter {
-            constructor(name, faction, giftType = 'Троянда') {
-                this.name = name;
+            constructor(username, faction, giftName, power) {
+                this.username = username;
                 this.faction = faction; // 'СКРП Лаб' або 'Зона'
-                this.giftType = giftType;
+                this.giftName = giftName;
+                this.power = power;
+
+                this.isBoss = power >= 50;
+                this.scale = this.isBoss ? 2.4 : (power >= 10 ? 1.5 : 1);
                 
-                this.isEpic = giftType.includes('Лев') || giftType.includes('Галактика');
-                this.scale = this.isEpic ? 2.2 : 1;
+                // Спавн біля баз відповідної команди
+                this.x = faction === 'СКРП Лаб' ? 120 : canvas.width - 120;
+                this.y = canvas.height / 2 + (Math.random() * 300 - 150);
                 
-                // Спавн з боків екрану
-                this.x = faction === 'СКРП Лаб' ? -60 : canvas.width + 60;
-                this.y = canvas.height / 2 + (Math.random() * 260 - 130);
+                // Ціль — середина арени або зустріч з ворогом
+                this.targetX = canvas.width / 2 + (faction === 'СКРП Лаб' ? -160 : 160) + (Math.random() * 120 - 60);
+                this.speed = 2.5 + Math.random() * 2;
+                this.avatar = avatarsList[Math.floor(Math.random() * avatarsList.length)];
                 
-                // Ціль в центрі арени з урахуванням зіткнень
-                this.targetX = canvas.width / 2 + (faction === 'СКРП Лаб' ? -130 : 130) + (Math.random() * 100 - 50);
-                this.speed = 3 + Math.random() * 2;
-                this.avatar = avatars[Math.floor(Math.random() * avatars.length)];
-                
-                this.health = this.isEpic ? 400 : 120;
-                this.maxHealth = this.health;
-                this.bounceOffset = Math.random() * 100;
-                this.state = 'walk'; // walk, battle, victory
-                this.attackCooldown = 0;
+                this.hp = power * 20 + 100;
+                this.maxHp = this.hp;
+                this.state = 'march'; // march, combat, victory
+                this.attackTimer = 0;
+                this.bounceSeed = Math.random() * 100;
             }
 
             update() {
-                // Логіка пересування до центру
-                if (this.state === 'walk') {
-                    if (Math.abs(this.x - this.targetX) > 4) {
+                if (this.state === 'march') {
+                    // Рух до лінії зіткнення
+                    if (Math.abs(this.x - this.targetX) > 6) {
                         this.x += (this.targetX > this.x ? 1 : -1) * this.speed;
                     } else {
-                        this.state = 'battle';
+                        this.state = 'combat';
                     }
-                } else if (this.state === 'battle') {
-                    // Бійка в центрі: кумедне хитання та випадкові рухи
-                    this.y += Math.sin(Date.now() * 0.01 + this.bounceOffset) * 0.6;
-                    
-                    // Пошук ворога для нанесення уявних ударів
-                    this.attackCooldown++;
-                    if (this.attackCooldown > 60) {
-                        this.attackCooldown = 0;
-                        // Створюємо маленьку іскру удару
-                        particles.push(new Particle(this.x + (this.faction === 'СКРП Лаб' ? 20 : -20), this.y, '#fff', '💥'));
+                } else if (this.state === 'combat') {
+                    // Легке коливання під час битви
+                    this.y += Math.sin(Date.now() * 0.01 + this.bounceSeed) * 0.5;
+
+                    // Генерація іскор ударів
+                    this.attackTimer++;
+                    if (this.attackTimer > 50) {
+                        this.attackTimer = 0;
+                        let sparkColor = this.faction === 'СКРП Лаб' ? '#ff3366' : '#00ff66';
+                        particles.push(new Particle(this.x + (this.faction === 'СКРП Лаб' ? 25 : -25), this.y, sparkColor, '💥'));
                     }
                 }
             }
@@ -251,62 +256,68 @@
 
                 // Тінь під персонажем
                 ctx.beginPath();
-                ctx.ellipse(0, 35 * this.scale, 22 * this.scale, 8 * this.scale, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.ellipse(0, 38 * this.scale, 24 * this.scale, 9 * this.scale, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
                 ctx.fill();
 
-                // Аура навколо епічних гравців
-                if (this.isEpic) {
+                // Сяюча аура для босів
+                if (this.isBoss) {
                     ctx.beginPath();
-                    ctx.arc(0, 0, 45, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+                    ctx.arc(0, 0, 50, 0, Math.PI * 2);
+                    ctx.fillStyle = this.faction === 'СКРП Лаб' ? 'rgba(255, 51, 102, 0.25)' : 'rgba(0, 255, 102, 0.25)';
                     ctx.fill();
                     ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#ffd700';
+                    ctx.strokeStyle = this.faction === 'СКРП Лаб' ? '#ff3366' : '#00ff66';
                     ctx.stroke();
                 }
 
-                // Анімація стрибка / дихання
-                let jump = Math.sin(Date.now() * 0.008 + this.bounceOffset) * 5;
+                // Ефект стрибка/дихання
+                let jumpAnim = Math.sin(Date.now() * 0.009 + this.bounceSeed) * 6;
 
-                // Основний аватар
-                ctx.font = `${38 * this.scale}px sans-serif`;
+                // Малювання аватара
+                ctx.font = `${40 * this.scale}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(this.avatar, 0, jump);
+                ctx.fillText(this.avatar, 0, jumpAnim);
 
-                // Корона для Левів
-                if (this.isEpic) {
+                // Корона або капелюх для епічних гравців
+                if (this.isBoss) {
                     ctx.font = '24px sans-serif';
-                    ctx.fillText('👑', 0, -38 * this.scale + jump);
+                    ctx.fillText('👑', 0, -42 * this.scale + jumpAnim);
                 }
 
-                // Смуга HP
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(-28, -52 * this.scale, 56, 6);
+                // Шкала здоров'я
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(-32, -56 * this.scale, 64, 7);
                 ctx.fillStyle = this.faction === 'СКРП Лаб' ? '#ff3366' : '#00ff66';
-                ctx.fillRect(-28, -52 * this.scale, 56 * (this.health / this.maxHealth), 6);
+                ctx.fillRect(-32, -56 * this.scale, 64 * (this.hp / this.maxHp), 7);
 
-                // Нікнейм глядача з обведенням
+                // Нікнейм глядача з чітким контуром
                 ctx.font = 'bold 13px Segoe UI';
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#ffffff';
                 ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 4;
-                ctx.strokeText(this.name, 0, 46 * this.scale);
-                ctx.fillText(this.name, 0, 46 * this.scale);
+                ctx.strokeText(this.username, 0, 48 * this.scale);
+                ctx.fillText(this.username, 0, 48 * this.scale);
+
+                // Назва подарунка під ніком
+                ctx.font = '11px Segoe UI';
+                ctx.fillStyle = '#ffd700';
+                ctx.strokeText(`🎁 ${this.giftName}`, 0, 65 * this.scale);
+                ctx.fillText(`🎁 ${this.giftName}`, 0, 65 * this.scale);
 
                 ctx.restore();
             }
         }
 
-        // Клас Частинок (Вибухи, іскри, ефекти подарунків)
+        // Клас системи часток (Вибухи, конфетті, ефекти)
         class Particle {
             constructor(x, y, color, emoji = '✨') {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 12;
-                this.vy = (Math.random() - 0.5) * 12 - 3;
+                this.vx = (Math.random() - 0.5) * 14;
+                this.vy = (Math.random() - 0.5) * 14 - 3;
                 this.alpha = 1;
                 this.color = color;
                 this.emoji = emoji;
@@ -315,7 +326,7 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.35; // гравітація
+                this.vy += 0.4; // гравітація
                 this.alpha -= 0.02;
             }
             draw() {
@@ -327,7 +338,7 @@
             }
         }
 
-        // Клас Плаваючого тексту (Сповіщення про донат)
+        // Клас плаваючих сповіщень на екрані
         class FloatingText {
             constructor(text, x, y, color) {
                 this.text = text;
@@ -337,13 +348,13 @@
                 this.color = color;
             }
             update() {
-                this.y -= 1.8;
+                this.y -= 2;
                 this.alpha -= 0.015;
             }
             draw() {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, this.alpha);
-                ctx.font = 'bold 16px Segoe UI';
+                ctx.font = 'bold 17px Segoe UI';
                 ctx.fillStyle = this.color;
                 ctx.strokeStyle = '#000';
                 ctx.lineWidth = 4;
@@ -353,134 +364,173 @@
             }
         }
 
-        // Обробка події донату / подарунка
+        // Обробник отримання подарунка
         function handleGiftEvent(username, faction, giftName, count = 1) {
-            const points = count * (giftName.includes('Лев') ? 25 : (giftName.includes('Петарда') ? 5 : 1));
-            
+            // Розрахунок ваги подарунка (очок)
+            let powerWeight = 1;
+            let particleEmoji = '🌹';
+            let effectColor = '#ff3366';
+
+            if (giftName.includes('Петарда') || giftName.includes('Торт')) {
+                powerWeight = 15;
+                particleEmoji = '🎇';
+                effectColor = '#ff9900';
+                screenShakeIntensity = 12;
+            } else if (giftName.includes('Лев') || giftName.includes('Галактика')) {
+                powerWeight = 100;
+                particleEmoji = '🦁';
+                effectColor = '#ffd700';
+                screenShakeIntensity = 25;
+            } else {
+                particleEmoji = faction === 'СКРП Лаб' ? '❤️' : '💚';
+                effectColor = faction === 'СКРП Лаб' ? '#ff3366' : '#00ff66';
+            }
+
+            const totalPoints = count * powerWeight;
+
             if (faction === 'СКРП Лаб') {
-                scoreLab += points;
+                scoreLab += totalPoints;
                 document.getElementById('scoreLab').innerText = scoreLab;
             } else {
-                scoreZone += points;
+                scoreZone += totalPoints;
                 document.getElementById('scoreZone').innerText = scoreZone;
             }
 
-            // Пошук або створення бійця
-            let fighter = fighters.find(f => f.name === username);
+            // Пошук існуючого бійця або створення нового
+            let fighter = fighters.find(f => f.username === username);
             if (!fighter) {
-                fighter = new Fighter(username, faction, giftName);
+                fighter = new Fighter(username, faction, giftName, powerWeight);
                 fighters.push(fighter);
             } else {
-                if (giftName.includes('Лев')) fighter.isEpic = true;
-                fighter.health = Math.min(fighter.maxHealth * 2, fighter.health + 50);
+                fighter.power += powerWeight;
+                if (fighter.power >= 50) fighter.isBoss = true;
+                fighter.hp = Math.min(fighter.maxHealth * 2, fighter.hp + powerWeight * 10);
             }
 
-            // Налаштування ефектів залежно від подарунка
-            let emoji = '🌹';
-            let color = '#ff3366';
-            if (giftName.includes('Петарда')) { emoji = '🎇'; color = '#ff9900'; screenShake = 12; }
-            if (giftName.includes('Лев')) { emoji = '🦁'; color = '#ffd700'; screenShake = 22; }
-
-            // Спавн часток вибуху
-            for (let i = 0; i < 18; i++) {
-                particles.push(new Particle(fighter.x, fighter.y, color, emoji));
+            // Спавн часток вибуху біля бійця
+            for (let i = 0; i < 20; i++) {
+                particles.push(new Particle(fighter.x, fighter.y, effectColor, particleEmoji));
             }
 
-            floatingTexts.push(new FloatingText(`+${points} (${username}: ${giftName})`, fighter.x, fighter.y - 50, color));
+            floatingTexts.push(new FloatingText(`+${totalPoints} (${username} -> ${giftName})`, fighter.x, fighter.y - 60, effectColor));
         }
 
-        // Тестові симуляції для кнопок
-        function simulateGift(faction, giftName, count) {
-            const randomName = testNames[Math.floor(Math.random() * testNames.length)];
-            handleGiftEvent(randomName, faction, giftName, count);
+        // Функції для тестування з панелі браузера
+        function simulateGift(faction, giftName, basePower) {
+            const randomUser = sampleUsernames[Math.floor(Math.random() * sampleUsernames.length)];
+            handleGiftEvent(randomUser, faction, giftName, 1);
         }
 
-        function triggerMegaEvent() {
-            simulateGift('СКРП Лаб', 'Лев (Епік)', 10);
-            setTimeout(() => simulateGift('Зона', 'Петарда', 10), 200);
-            screenShake = 30;
+        function triggerGlobalChaos() {
+            simulateGift('СКРП Лаб', 'Лев', 100);
+            setTimeout(() => simulateGift('Зона', 'Галактика', 150), 300);
+            screenShakeIntensity = 30;
         }
 
-        // Рендеринг футуристичного фону арены
-        function drawBackground() {
+        // Рендеринг епічного фону арени та баз
+        function drawDynamicBackground() {
             // Градієнтне тло
-            let bgGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 100, canvas.width / 2, canvas.height / 2, canvas.width);
-            bgGrad.addColorStop(0, '#111827');
-            bgGrad.addColorStop(1, '#030712');
-            ctx.fillStyle = bgGrad;
+            let bgGradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 150, canvas.width / 2, canvas.height / 2, canvas.width);
+            bgGradient.addColorStop(0, '#0f172a');
+            bgGradient.addColorStop(1, '#020617');
+            ctx.fillStyle = bgGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Неонова сітка арени на підлозі (Cyberpunk Grid)
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 1.5;
-            let step = 60;
-            for (let x = 0; x < canvas.width; x += step) {
+            // Неонова кіберпанк сітка підлоги
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.025);';
+            ctx.lineWidth = 1;
+            let gridStep = 70;
+            for (let x = 0; x < canvas.width; x += gridStep) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
-            for (let y = 0; y < canvas.height; y += step) {
+            for (let y = 0; y < canvas.height; y += gridStep) {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
             }
 
-            // Центральна розділова лінія сили
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 8]);
+            // Малювання бази СКРП Лаб (Зліва)
+            ctx.fillStyle = 'rgba(255, 51, 102, 0.15)';
             ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, 60);
-            ctx.lineTo(canvas.width / 2, canvas.height - 60);
+            ctx.arc(80, canvas.height / 2, 90, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ff3366';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.font = 'bold 16px Segoe UI';
+            ctx.fillStyle = '#ff3366';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔬 БАЗА ЛАБ', 80, canvas.height / 2 - 110);
+
+            // Малювання бази Зона (Справа)
+            ctx.fillStyle = 'rgba(0, 255, 102, 0.15)';
+            ctx.beginPath();
+            ctx.arc(canvas.width - 80, canvas.height / 2, 90, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#00ff66';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.fillStyle = '#00ff66';
+            ctx.fillText('☢️ БАЗА ЗОНА', canvas.width - 80, canvas.height / 2 - 110);
+
+            // Центральна лінія зіткнення
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 80);
+            ctx.lineTo(canvas.width / 2, canvas.height - 80);
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Оновлення фонових частинок
-            backgroundEffects.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
+            // Оновлення фонових зірок
+            backgroundStars.forEach(star => {
+                star.x += star.speedX;
+                star.y += star.speedY;
+                if (star.x < 0) star.x = canvas.width;
+                if (star.x > canvas.width) star.x = 0;
+                if (star.y < 0) star.y = canvas.height;
+                if (star.y > canvas.height) star.y = 0;
 
-                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
                 ctx.fill();
             });
         }
 
-        // Головний ігровий цикл
-        function animate() {
+        // Головний ігровий цикл рендерингу
+        function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
             // Ефект трясіння екрану (Screen Shake)
-            if (screenShake > 0) {
-                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-                screenShake *= 0.88;
-                if (screenShake < 0.4) screenShake = 0;
+            if (screenShakeIntensity > 0) {
+                ctx.translate((Math.random() - 0.5) * screenShakeIntensity, (Math.random() - 0.5) * screenShakeIntensity);
+                screenShakeIntensity *= 0.86;
+                if (screenShakeIntensity < 0.3) screenShakeIntensity = 0;
             }
 
-            drawBackground();
+            drawDynamicBackground();
 
-            // Малювання бійців
-            fighters.forEach(f => {
-                f.update();
-                f.draw();
+            // Оновлення та малювання бійців
+            fighters.forEach(fighter => {
+                fighter.update();
+                fighter.draw();
             });
 
-            // Малювання часток
-            particles.forEach((p, index) => {
-                p.update();
-                p.draw();
-                if (p.alpha <= 0) particles.splice(index, 1);
+            // Оновлення та малювання часток
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.alpha <= 0) particles.splice(index, 1);
             });
 
-            // Малювання плаваючих текстів
+            // Оновлення плаваючих текстів
             floatingTexts.forEach((ft, index) => {
                 ft.update();
                 ft.draw();
@@ -488,45 +538,45 @@
             });
 
             ctx.restore();
-            requestAnimationFrame(animate);
+            requestAnimationFrame(gameLoop);
         }
 
-        animate();
+        gameLoop();
 
         // ==========================================
-        // ПІДКЛЮЧЕННЯ WEBSOCKET ДО TIKTOK LIVE МОСТУ
+        // ІНТЕГРАЦІЯ WEBSOCKET (ТИК ТОК LIVE МОСТ)
         // ==========================================
-        function connectWebSocket() {
-            const wsStatus = document.getElementById('ws-status');
-            const ws = new WebSocket('ws://localhost:8080'); // Порт локального мосту
+        function initTikTokWebSocket() {
+            const networkStatus = document.getElementById('network-status');
+            const ws = new WebSocket('ws://localhost:8080'); // Порт локального Node.js мосту
 
             ws.onopen = () => {
-                wsStatus.innerText = '🟢 WS: Підключено до TikTok Live (@scrp_lab)';
-                wsStatus.classList.add('connected');
+                networkStatus.innerText = '🟢 WS: Підключено до TikTok (@scrp_lab)';
+                networkStatus.classList.add('connected');
             };
 
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    // Очікуваний формат від Node.js: { username: "...", faction: "СКРП Лаб", giftName: "Троянда", count: 1 }
+                    // Формат даних від Node.js: { username: "...", faction: "СКРП Лаб", giftName: "Троянда", count: 1 }
                     if (data.username && data.giftName) {
-                        const assignedFaction = data.faction || (Math.random() > 0.5 ? 'СКРП Лаб' : 'Зона');
-                        handleGiftEvent(data.username, assignedFaction, data.giftName, data.count || 1);
+                        const targetFaction = data.faction || (Math.random() > 0.5 ? 'СКРП Лаб' : 'Зона');
+                        handleGiftEvent(data.username, targetFaction, data.giftName, data.count || 1);
                     }
-                } catch (e) {
-                    console.error('Помилка обробки WebSocket:', e);
+                } catch (err) {
+                    console.error('Помилка обробки WebSocket повідомлення:', err);
                 }
             };
 
             ws.onclose = () => {
-                wsStatus.innerText = '🔴 WS: Перепідключення...';
-                wsStatus.classList.remove('connected');
-                setTimeout(connectWebSocket, 4000);
+                networkStatus.innerText = '🔴 WS: Звʼязок втрачено. Перепідключення...';
+                networkStatus.classList.remove('connected');
+                setTimeout(initTikTokWebSocket, 5000);
             };
         }
 
-        // Розкоментуйте рядок нижче, коли запустите Node.js міст на ПК:
-        // connectWebSocket();
+        // Розкоментуйте рядок нижче, коли запустите локальний Node.js міст:
+        // initTikTokWebSocket();
     </script>
 </body>
 </html>
